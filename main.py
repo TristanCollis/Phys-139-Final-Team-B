@@ -72,7 +72,7 @@ if config["DEFAULT"].getboolean("save_plots"):
     plt.savefig("optimized_scatter.png")
 
     plt.clf()
-    plt.hist(n[burn_period:] + 2017, bins=data.size)
+    plt.hist(n[burn_period:], bins=data.size)
     plt.savefig("optimized_histogram.png")
 
 if config["DEFAULT"].getboolean("save_values"):
