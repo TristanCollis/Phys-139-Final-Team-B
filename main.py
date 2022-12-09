@@ -4,6 +4,7 @@ from functools import partial
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import special as sp
+from scipy import stats
 
 
 def g(k, l1, l2, x):
@@ -27,6 +28,7 @@ with open(get_config("data_path"), "r") as f:
     data = np.array(tuple(int(value) for value in f.read().split()))
 
 n0 = data.size // 2
+burn_period = 1000
 
 rng = np.random.default_rng()
 
@@ -52,24 +54,6 @@ for k in range(reps):
     lambda_1s[k] = lambda_1
     lambda_2s[k] = lambda_2
 
-    # prob = np.exp(
-    #     np.log(lambda_1 * forward_sum) - lambda_1 * forward_index
-    #     + np.log(lambda_2 * reverse_sum) - lambda_2 * reverse_index
-    # )
-
-    # logprob = (
-    #     np.sum(np.log(data))
-    #     + np.sum(sp.loggamma(data))
-    #     - lambda_1 * (2 * forward_index + b0)
-    #     - lambda_2 * (2 * reverse_index + b0)
-    #     + np.log(lambda_1) * (2 * forward_sum + a0 - 1)
-    #     + np.log(lambda_2) * (2 * reverse_sum + a0 - 1)
-    #     - sp.loggamma(forward_sum)
-    #     - sp.loggamma(reverse_sum)
-    #     + (forward_sum + a0) * np.log(forward_index)
-    #     + (reverse_sum + a0) * np.log(reverse_index)
-    # )
-
     precomputed_g = g(forward_index, lambda_1, lambda_2, data)
 
     gs[k] = np.max(precomputed_g)
@@ -84,9 +68,19 @@ for k in range(reps):
     n[k] = n0
 
 if config["DEFAULT"].getboolean("save_plots"):
-    plt.scatter(lambda_1s, lambda_2s)
+    plt.scatter(lambda_1s[burn_period:], lambda_2s[burn_period:])
     plt.savefig("optimized_scatter.png")
 
     plt.clf()
-    plt.hist(n, bins=data.size)
+    plt.hist(n[burn_period:] + 2017, bins=data.size)
     plt.savefig("optimized_histogram.png")
+
+if config["DEFAULT"].getboolean("save_values"):
+    with open("results.txt", 'w') as f:
+        f.writelines(
+            [
+                f"n: {int(np.mean(n[burn_period:] + 2017))}\n",
+                f"lambda 1: {np.mean(lambda_1s[burn_period:])}\n",
+                f"lambda_2: {np.mean(lambda_2s[burn_period:])}\n"
+            ]
+        )

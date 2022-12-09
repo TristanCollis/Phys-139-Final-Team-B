@@ -52,11 +52,14 @@ for k in range(reps):
             n0 = l
             n[l] = n0
 
+print("finished running")
+
 
 if config["DEFAULT"].getboolean("save_plots"):
     plt.scatter(lambda_1s, lambda_2s)
     plt.savefig("unoptimized_scatter.png")
 
     plt.clf()
-    plt.hist(n, bins=data.size)
+    plt.hist(n + 2016, bins=data.size)
     plt.savefig("unoptimized_histogram.png")
+
